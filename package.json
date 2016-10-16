@@ -1,0 +1,11 @@
+{
+  "name": "cakewalk-js",
+  "version": "0.0.1",
+  "description": "inline html, js, and css",
+  "main": "index.js",
+  "author": "Christian Kastbjerg",
+  "license": "ISC",
+  "bin": {
+    "cakewalk": "bin/cakewalk"
+  }
+}
