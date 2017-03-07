@@ -42,7 +42,6 @@ module.exports = dir => {
         lines.forEach(line => {
             const js = line.match(/script.*src="(.*)"/);
             const css = line.match(/link.*href="(.*\.css)"/);
-            const html = line.match(/link.*href="(.*\.html)"/);
 
             if (js) {
                 const script = loadFile(`${componentPath}${js[1]}`);
@@ -50,8 +49,24 @@ module.exports = dir => {
             } else if (css) {
                 const style = loadFile(`${componentPath}${css[1]}`);
                 newLines.push(style ? `<style>\n${style}</style>` : line);
-            } else if (html) {
-                newLines.push(files[`${componentPath}${html[1]}`] || fs.readFileSync(`${componentPath}${html[1]}`, 'utf8'));
+            } else {
+                newLines.push(line);
+            }
+        });
+
+        files[file] = newLines.join('\n');
+    });
+
+    Object.keys(files).forEach(file => {
+        const lines = files[file].split('\n');
+        const newLines = [];
+        const componentPath = file.match(/^(.*[\\\/])/)[0];
+
+        lines.forEach(line => {
+            const html = line.match(/template.*href="(.*\.html)"/);
+
+            if (html) {
+                newLines.push(files[`${componentPath}${html[1]}`]);
             } else {
                 newLines.push(line);
             }
