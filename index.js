@@ -45,7 +45,7 @@ module.exports = dir => {
 
             if (js) {
                 const script = loadFile(`${componentPath}${js[1]}`);
-                newLines.push(script ? `<script>\n${script}</script>` : line);
+                newLines.push(script ? `<script>(function() {\n${script}})()</script>` : line);
             } else if (css) {
                 const style = loadFile(`${componentPath}${css[1]}`);
                 newLines.push(style ? `<style>\n${style}</style>` : line);
@@ -75,5 +75,5 @@ module.exports = dir => {
         files[file] = newLines.join('\n');
     });
 
-    return files[htmlFiles.pop()];
+    return files[htmlFiles[0]];
 };
