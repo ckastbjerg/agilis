@@ -3,16 +3,45 @@
 const fs = require('fs');
 const path = require('path');
 
+const templateRegex = /template.*href="(.*\.html)"/;
+
 function loadFile(filePath) {
     let res;
 
     try {
         res = fs.readFileSync(filePath, 'utf8');
-    } catch(err) {
-        console.warn('no local file named: ', filePath)
+    } catch (err) {
+        console.warn('no local file named: ', filePath);
     }
 
     return res;
+}
+
+function createFileRecursively(filePath, fileMarkup, files, compiledFiles) {
+    const lines = fileMarkup.split('\n');
+    const newLines = [];
+    const componentPath = filePath.match(/^(.*[\\\/])/)[0];
+
+    lines.forEach(line => {
+        const template = line.match(templateRegex);
+        if (template) {
+            const templatePath = `${componentPath}${template[1]}`;
+            const compiledFile = compiledFiles[templatePath];
+            if (!compiledFiles[templatePath]) {
+                createFileRecursively(
+                    templatePath,
+                    files[templatePath],
+                    files,
+                    compiledFiles
+                );
+            }
+            newLines.push(compiledFiles[templatePath]);
+        } else {
+            newLines.push(line);
+        }
+    });
+
+    compiledFiles[filePath] = newLines.join('\n');
 }
 
 function getHtmlFiles(dir, filelist) {
@@ -28,11 +57,12 @@ function getHtmlFiles(dir, filelist) {
     });
 
     return filelist;
-};
+}
 
 module.exports = dir => {
+    const compiledFiles = {};
+    const files = {};
     const htmlFiles = getHtmlFiles(dir);
-    let files = {};
 
     htmlFiles.forEach(file => {
         const lines = fs.readFileSync(file, 'utf8').split('\n');
@@ -45,7 +75,11 @@ module.exports = dir => {
 
             if (js) {
                 const script = loadFile(`${componentPath}${js[1]}`);
-                newLines.push(script ? `<script>(function() {\n${script}})()</script>` : line);
+                newLines.push(
+                    script
+                        ? `<script>(function() {\n${script}})()</script>`
+                        : line
+                );
             } else if (css) {
                 const style = loadFile(`${componentPath}${css[1]}`);
                 newLines.push(style ? `<style>\n${style}</style>` : line);
@@ -57,23 +91,11 @@ module.exports = dir => {
         files[file] = newLines.join('\n');
     });
 
-    Object.keys(files).forEach(file => {
-        const lines = files[file].split('\n');
-        const newLines = [];
-        const componentPath = file.match(/^(.*[\\\/])/)[0];
+    const rootFileKey = Object.keys(files).sort(
+        (a, b) => a.length - b.length
+    )[0];
+    const rootFile = files[rootFileKey];
+    createFileRecursively(rootFileKey, rootFile, files, compiledFiles);
 
-        lines.forEach(line => {
-            const html = line.match(/template.*href="(.*\.html)"/);
-
-            if (html) {
-                newLines.push(files[`${componentPath}${html[1]}`]);
-            } else {
-                newLines.push(line);
-            }
-        });
-
-        files[file] = newLines.join('\n');
-    });
-
-    return files[htmlFiles[0]];
+    return compiledFiles[rootFileKey];
 };
