@@ -1,12 +1,12 @@
 {
-  "name": "cakewalk-js",
-  "version": "0.0.7-alpha",
+  "name": "agilis",
+  "version": "0.0.1-alpha",
   "description": "A straighforward frontend framework",
   "main": "index.js",
   "author": "Christian Kastbjerg",
   "license": "ISC",
   "bin": {
-    "cakewalk": "bin/cakewalk"
+    "agilis": "bin/agilis"
   },
   "dependencies": {
     "commander": "^2.12.2",

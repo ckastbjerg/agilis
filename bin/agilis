@@ -2,19 +2,19 @@
 
 'use strict';
 
-process.title = 'cakewalk';
+process.title = 'agilis';
 
 const fs = require('fs');
 const program = require('commander');
 const opn = require('opn');
-const cakewalk = require('../index.js');
+const agilis = require('../index.js');
 const serve = require('./serve');
 
 const inputDir = process.argv[2];
 const outputDir = process.argv[3];
 
 function writeFile() {
-    const markup = cakewalk(inputDir);
+    const markup = agilis(inputDir);
     if (!fs.existsSync(outputDir)){
         fs.mkdirSync(outputDir);
     }
@@ -55,5 +55,5 @@ if (program.watch || program.dev) {
 }
 
 if (program.serve || program.dev) {
-    serve.init(cakewalk(inputDir));
+    serve.init(agilis(inputDir));
 }
