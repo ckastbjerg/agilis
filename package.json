@@ -1,11 +1,17 @@
 {
   "name": "cakewalk-js",
-  "version": "0.0.7",
-  "description": "inline html, js, and css",
+  "version": "0.0.7-alpha",
+  "description": "A straighforward frontend framework",
   "main": "index.js",
   "author": "Christian Kastbjerg",
   "license": "ISC",
   "bin": {
     "cakewalk": "bin/cakewalk"
+  },
+  "dependencies": {
+    "commander": "^2.12.2",
+    "express": "^4.16.2",
+    "opn": "^5.1.0",
+    "socket.io": "^2.0.4"
   }
 }

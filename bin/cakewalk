@@ -4,21 +4,56 @@
 
 process.title = 'cakewalk';
 
-var cakewalk = require('../index.js');
-var fs = require('fs');
-var packageJson = require('../package.json');
+const fs = require('fs');
+const program = require('commander');
+const opn = require('opn');
+const cakewalk = require('../index.js');
+const serve = require('./serve');
 
-var dir = process.argv[2];
+const inputDir = process.argv[2];
+const outputDir = process.argv[3];
 
-if (!dir){
+function writeFile() {
+    const markup = cakewalk(inputDir);
+    if (!fs.existsSync(outputDir)){
+        fs.mkdirSync(outputDir);
+    }
+
+    fs.writeFile(`${outputDir}/index.html`, markup, err => {
+        if (err) {
+            return console.log(err);
+        }
+        serve.update(markup);
+    });
+}
+
+program
+    .usage('[options] <input-dir> <output-file>')
+    .option('-w, --watch', 'Save file on change')
+    .option('-s, --serve', 'Serve file on localhost:3000')
+    .option('-o, --open', 'Open tab with localhost:3000 in default browser')
+    .option('-d, --dev', 'Save file on change and serve file on localhost:3000')
+    .parse(process.argv);
+
+if (!inputDir || !outputDir){
+    program.help();
+    return;
+} else if (!fs.lstatSync(inputDir).isDirectory()) {
+    console.error(`${inputDir} is not a directory`);
     program.help();
     return;
 }
 
-if (!fs.lstatSync(dir).isDirectory()) {
-    console.error("'%s' is not a directory", dir);
-    program.help();
-    return;
+writeFile();
+
+if (program.open || program.dev) {
+    program.open && opn(`${outputDir}/index.html`);
 }
 
-cakewalk(dir);
+if (program.watch || program.dev) {
+    fs.watch(inputDir, { recursive: true }, writeFile);
+}
+
+if (program.serve || program.dev) {
+    serve.init(cakewalk(inputDir));
+}
